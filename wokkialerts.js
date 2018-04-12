@@ -57,6 +57,7 @@ client.registry
 setInterval(() => {
     winston.info(`Running scheduled stream check`);
     streams.checkTwitch(client);
+    //streams.checkYoutube(client);
 }, 120000);
 
 client.setProvider(
