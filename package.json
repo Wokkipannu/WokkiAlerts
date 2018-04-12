@@ -1,13 +1,13 @@
 {
   "name": "WokkiAlerts",
   "version": "1.0.0",
-  "description": "",
+  "description": "A Discord bot for sending Twitch and YouTube livestream notifications",
   "main": "wokkialerts.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node wokkialerts"
   },
   "keywords": [],
-  "author": "",
+  "author": "Wokki",
   "license": "ISC",
   "dependencies": {
     "discord.js": "github:hydrabolt/discord.js",
