@@ -44,7 +44,7 @@ exports.checkTwitch = async function(client) {
             let twitchStreamers = _.filter(streamers, streamer => _.includes(streamer.guilds, guild.id));
             twitchStreamers = _.sortBy(twitchStreamers, 'status');
 
-            if (!streamsChannel || twitchStreamers.length >= 0) return;
+            if (!streamsChannel || twitchStreamers.length <= 0) return;
             streamsChannel = guild.channels.find('id', streamsChannel);
 
             if (!twitchMessage) {
@@ -73,7 +73,10 @@ exports.checkTwitch = async function(client) {
 
                     message.edit(`Last check: ${moment().format('DD.MM.YYYY H:mm:ss')}`, { embed: liveEmbed });
                 })
-                .catch(winston.error);
+                .catch(err => {
+                    winston.error(err);
+                    client.provider.set(guild.id, "twitchMessage", ""); // Set twitchMessage for the server blank so it can be recreated, as it most likely was deleted
+                });
         });
     });
 }
@@ -106,7 +109,7 @@ exports.checkYoutube = async function(client) {
         let youtubeStreamers = _.filter(streamers, streamer => _.includes(streamer.guilds, guild.id));
         youtubeStreamers = _.sortBy(youtubeStreamers, 'status');
 
-        if (!streamsChannel || youtubeStreamers.length >= 0) return;
+        if (!streamsChannel || youtubeStreamers.length <= 0) return;
         streamsChannel = guild.channels.find('id', streamsChannel);
 
         if (!youtubeMessage) {
