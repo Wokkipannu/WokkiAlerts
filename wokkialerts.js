@@ -24,7 +24,7 @@ client.on('ready', () => {
     .on('commandRun', (cmd, promise, msg, args) => winston.info(`User ${msg.author.tag} (${msg.author.id}) ran command ${cmd.memberName}`))
     .on('commandError', (cmd, err) => winston.error(`Error in command ${cmd.groupID}:${cmd.memberName}`, err))
     .on('message', msg => {
-        if (msg.channel.id === client.provider.get(msg.guild.id, "streamsChannel")) {
+        if (msg.channel.id === client.provider.get(msg.guild.id, "streamsChannel") && msg.author !== client.user) {
             if (msg.content.startsWith(client.commandPrefix)) {
                 let cmdTxt = msg.content.split(client.commandPrefix)[1];
                 if (_.includes(client.registry.commands, cmdTxt)) {
