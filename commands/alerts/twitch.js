@@ -42,8 +42,8 @@ module.exports = class TwitchCommand extends Command {
         if (!target || target === "") return msg.channel.send(`Uh oh! The streamer name part of the argument seems to be invalid. Please try again.`);
 
         if (method === "add") {
-            let twitchStreamers = _.filter(streamers, streamer => _.includes(streamer.guilds, guild.id));
-            if (twitchStreamers.length >= 8) return msg.channel.send(`Due to Discord Embed limitations, the current amount of maximum streamers per server is 8. In future versions, WokkiAlerts will support more streamers by sending multiple embeds.`);
+            let twitchStreamers = _.filter(streamers, streamer => _.includes(streamer.guilds, msg.guild.id));
+            //if (twitchStreamers.length >= 8) return msg.channel.send(`Due to Discord Embed limitations, the current amount of maximum streamers per server is 8. In future versions, WokkiAlerts will support more streamers by sending multiple embeds.`);
 
             await msg.channel.send(`Adding **${target}** to the list of streamers...`).then(message => {
                 request({
