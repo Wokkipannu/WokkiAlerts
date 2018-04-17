@@ -40,20 +40,64 @@ exports.checkTwitch = async function(client) {
 
         client.guilds.forEach(guild => {
             let streamsChannel = client.provider.get(guild.id, "streamsChannel");
-            let twitchMessage = client.provider.get(guild.id, "twitchMessage");
+            let twitchMessages = client.provider.get(guild.id, "twitchMessages", []);
             let twitchStreamers = _.filter(streamers, streamer => _.includes(streamer.guilds, guild.id));
             twitchStreamers = _.sortBy(twitchStreamers, 'status');
 
             if (!streamsChannel || twitchStreamers.length <= 0) return;
             streamsChannel = guild.channels.find('id', streamsChannel);
 
-            if (!twitchMessage) {
+            let numEmbeds = Math.ceil(twitchStreamers.length / 8);
+            if (twitchMessages.length < numEmbeds) {
+                for (let i = 0; i < (numEmbeds - twitchMessages.length); i++) {
+                    streamsChannel.send(`Creating a message for Twitch streams...`).then(message => {
+                        twitchMessages.push(message.id);
+                        return [client.provider.set(guild.id, "twitchMessages", twitchMessages),message.edit(`This message will update with Twitch streamer statuses in 2 minutes. Please do not delete this message.`)];
+                    });
+                }
+            }
+
+            let streamerChunks = _.chunk(twitchStreamers, 8);
+            let chunkIndex = 0;
+
+            _.each(twitchMessages, twitchMessage => {
+                streamsChannel.messages.fetch(twitchMessage)
+                    .then(message => {
+                        let liveEmbed = new MessageEmbed()
+                            .setColor('#00ff00')
+                            .setTitle('Twitch Streamers');
+
+                        let thisChunk = streamerChunks[chunkIndex];
+                        _.each(thisChunk, streamer => {
+                            if (streamer.status === "LIVE") {
+                                liveEmbed.addField("Streamer", streamer.user, true);
+                                liveEmbed.addField("Status", `[🔴 LIVE](https://www.twitch.tv/${streamer.user})`, true);
+                            }
+                            else {
+                                liveEmbed.addField("Streamer", streamer.user, true);
+                                liveEmbed.addField("Status", `OFFLINE`, true);
+                            }
+                            liveEmbed.addBlankField(true);
+                        });
+
+                        if (chunkIndex === 0) message.edit(`Last check: ${moment().format('DD.MM.YYYY H:mm:ss')}`, { embed: liveEmbed });
+                        else message.edit(``, { embed: liveEmbed });
+                        chunkIndex = chunkIndex + 1;
+                    })
+                    .catch(err => {
+                        winston.error(err);
+                        _.pull(twitchMessages, twitchMessage);
+                        client.provider.set(guild.id, "twitchMessages", twitchMessages);
+                    });
+            });
+
+            /*if (!twitchMessage) {
                 streamsChannel.send(`Creating a message for Twitch streams...`).then(message => {
                     return [client.provider.set(guild.id, "twitchMessage", message.id),message.edit(`This message will update with Twitch streamer statuses in 2 minutes. Please do not delete the message.`)];
                 });
-            }
+            }*/
 
-            streamsChannel.messages.fetch(twitchMessage)
+            /*streamsChannel.messages.fetch(twitchMessage)
                 .then(message => {
                     let liveEmbed = new MessageEmbed()
                         .setColor('#00ff00')
@@ -76,7 +120,7 @@ exports.checkTwitch = async function(client) {
                 .catch(err => {
                     winston.error(err);
                     client.provider.set(guild.id, "twitchMessage", ""); // Set twitchMessage for the server blank so it can be recreated, as it most likely was deleted
-                });
+                });*/
         });
     });
 }
@@ -138,6 +182,9 @@ exports.checkYoutube = async function(client) {
 
                 message.edit(`Last check: ${moment().format('DD.MM.YYYY H:mm:ss')}`, { embed: liveEmbed });
             })
-            .catch(winston.error);
+            .catch(err => {
+                winston.error(err);
+                client.provider.set(guild.id, "youtubeMessage", ""); // Set youtubeMessage for the server blank so it can be recreated, as it most likely was deleted
+            });
     });
 }
