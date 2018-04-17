@@ -23,6 +23,7 @@ module.exports = class RefreshCommand extends Command {
     run(msg) {
         streams.checkTwitch(this.client);
         //streams.checkYoutube(this.client);
-        msg.channel.send(`Streamer statuses refreshed`);
+        if (msg.channel.id === this.client.provider.get(msg.guild.id, "streamsChannel")) msg.channel.send(`Streamer statuses refreshed`).then(message => message.delete({ timeout: 5000 }));
+        else msg.channel.send(`Streamer statuses refreshed`);
     }
 }

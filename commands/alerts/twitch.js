@@ -43,7 +43,6 @@ module.exports = class TwitchCommand extends Command {
 
         if (method === "add") {
             let twitchStreamers = _.filter(streamers, streamer => _.includes(streamer.guilds, msg.guild.id));
-            //if (twitchStreamers.length >= 8) return msg.channel.send(`Due to Discord Embed limitations, the current amount of maximum streamers per server is 8. In future versions, WokkiAlerts will support more streamers by sending multiple embeds.`);
 
             await msg.channel.send(`Adding **${target}** to the list of streamers...`).then(message => {
                 request({
@@ -69,7 +68,8 @@ module.exports = class TwitchCommand extends Command {
                         };
                         streamers.push(user);
                     }
-                    return [this.client.provider.set("global", "twitchStreamers", streamers),message.edit(`You will now receive live alerts from **${target}**`)];
+                    if (msg.channel.id === this.client.provider.get(msg.guild.id, "streamsChannel")) return [this.client.provider.set("global", "twitchStreamers", streamers),message.edit(`You will now receive live alerts from **${target}**`),message.delete({ timeout: 5000 })];
+                    else return [this.client.provider.set("global", "twitchStreamers", streamers),message.edit(`You will now receive live alerts from **${target}**`)];
                 });
             });
         }
@@ -79,15 +79,18 @@ module.exports = class TwitchCommand extends Command {
                 if (user) {
                     _.pull(user.guilds, msg.guild.id);
                     if (user.guilds.length === 0) _.remove(streamers, { "user": target });
-                    return [this.client.provider.set("global", "twitchStreamers", streamers),message.edit(`You will no longer receive live alerts from **${target}**`)];
+                    if (msg.channel.id === this.client.provider.get(msg.guild.id, "streamsChannel")) return [this.client.provider.set("global", "twitchStreamers", streamers),message.edit(`You will no longer receive live alerts from **${target}**`),message.delete({ timeout: 5000 })];
+                    else return [this.client.provider.set("global", "twitchStreamers", streamers),message.edit(`You will no longer receive live alerts from **${target}**`)];
                 }
                 else {
-                    return message.edit(`**${target}** is not in the list of alerts. Make sure you wrote the name correctly and try again.`);
+                    if (msg.channel.id === this.client.provider.get(msg.guild.id, "streamsChannel")) return [message.edit(`**${target}** is not in the list of alerts. Make sure you wrote the name correctly and try again.`),message.delete({ timeout: 5000 })];
+                    else return message.edit(`**${target}** is not in the list of alerts. Make sure you wrote the name correctly and try again.`);
                 }
             });
         }
         else {
-            return msg.channel.send(`Invalid method. Use **>twitch add <name>** or **>twitch remove <name>**.`);
+            if (msg.channel.id === this.client.provider.get(msg.guild.id, "streamsChannel")) return msg.channel.send(`Invalid method. Use **>twitch add <name>** or **>twitch remove <name>**.`).then(message => message.delete({ timeout: 5000 }));
+            else return msg.channel.send(`Invalid method. Use **>twitch add <name>** or **>twitch remove <name>**.`);
         }
     }
 }
