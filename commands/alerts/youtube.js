@@ -5,7 +5,7 @@ const request = require('request');
 
 const { GOOGLE_API_KEY } = require('../../config.json');
 
-module.exports = class YoutubehCommand extends Command {
+module.exports = class YoutubeCommand extends Command {
     constructor(client) {
         super(client, {
             name: 'youtube',
