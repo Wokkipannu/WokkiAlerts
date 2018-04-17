@@ -27,7 +27,7 @@ client.on('ready', () => {
         if (msg.channel.id === client.provider.get(msg.guild.id, "streamsChannel") && msg.author !== client.user) {
             if (msg.content.startsWith(client.commandPrefix)) {
                 let cmdTxt = msg.content.split(client.commandPrefix)[1];
-                if (_.includes(client.registry.commands, cmdTxt)) {
+                if (client.registry.commands.find("name", cmdTxt)) {
                     msg.delete();
                 }
                 else {
@@ -55,7 +55,6 @@ client.registry
 
 // Check for livestreams every 2 minutes
 setInterval(() => {
-    winston.info(`Running scheduled stream check`);
     streams.checkTwitch(client);
     //streams.checkYoutube(client);
 }, 120000);
