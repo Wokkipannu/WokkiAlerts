@@ -28,17 +28,9 @@ module.exports = class SetChannelCommand extends Command {
     }
 
     run(msg, { channel }) {
-        if (!channel || channel === "") {
-            winston.info(`Setting stream alerts channel to ${msg.channel.name} (${msg.channel.id}) in guild ${msg.guild.name} (${msg.guild.id})`);
-            this.client.provider.set(msg.guild.id, "streamsChannel", msg.channel.id);
-            if (msg.channel.id === this.client.provider.get(msg.guild.id, "streamsChannel")) return msg.channel.send(`Streams channel set to **${msg.channel.name} (${msg.channel.id})**.`).then(message => message.delete({ timeout: 5000 }));
-            else return msg.channel.send(`Streams channel set to **${msg.channel.name} (${msg.channel.id})**.`);
-        }
-        else {
-            let alertsChannel = msg.guild.channels.find('name', channel);
-            if (!alertsChannel) return msg.channel.send(`Could not find a channel with the name **${channel}**. Please make sure the channel name is written correctly.\nIf the channel name incldues dashes (-) include those in the channel name.`);
-            this.client.provider.set(msg.guild.id, "streamsChannel", alertsChannel.id);
-            return msg.channel.send(`Streams channel set to **${alertsChannel.name} (${alertsChannel.id})**.`);
-        }
+        if (!msg.mentions.channels.first()) return msg.channel.send(`You must mention the channel name by using #channel-name`);
+        channel = msg.mentions.channels.first();
+        this.client.provider.set(msg.guild.id, channel.id);
+        return msg.channel.send(`Streams channel set to **${channel.name} (${channel.id})**`);
     }
 }
